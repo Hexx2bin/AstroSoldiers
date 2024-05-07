@@ -5,6 +5,8 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Components/WidgetComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Structures/InputActionsData.h"
 
 #if WITH_EDITOR
@@ -21,8 +23,7 @@ AAstroSoldierCharacter::AAstroSoldierCharacter()
 	TSharedRef<FPropertySection> Section = PropertyModule.FindOrCreateSection("Character", "AstroSoldier", LOCTEXT("AstroSoldier", "AstroSoldier"));
 	Section->AddCategory("Elements");
 #undef LOCTEXT_NAMESPACE
-#endif
-	
+#endif	
 	
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -34,6 +35,12 @@ AAstroSoldierCharacter::AAstroSoldierCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
+
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
+	OverHeadWidget->SetupAttachment(GetMesh());
 }
 
 void AAstroSoldierCharacter::PawnClientRestart()

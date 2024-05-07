@@ -11,6 +11,7 @@
 
 class UInputActionsData;
 class UInputMappingContext;
+class UWidgetComponent;
 
 UCLASS()
 class ASTROSOLDIER_API AAstroSoldierCharacter : public ACharacter
@@ -57,4 +58,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Elements|Camera", meta = (AllowPrivateAccess = "true"), meta = (ClampMin = 0.f), meta = (ClampMax = 1.f))
     float LookUpTurnRate = 0.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Elements|HUD", meta=(AllowPrivateAccess = "true"))
+	TObjectPtr<UWidgetComponent> OverHeadWidget;
 };
