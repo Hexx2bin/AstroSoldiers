@@ -5,8 +5,11 @@
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "AstroComponents/CombatComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Items/Weapons/Weapon.h"
+#include "Net/UnrealNetwork.h"
 #include "Structures/InputActionsData.h"
 
 #if WITH_EDITOR
@@ -26,6 +29,7 @@ AAstroSoldierCharacter::AAstroSoldierCharacter()
 #endif	
 	
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
@@ -41,6 +45,62 @@ AAstroSoldierCharacter::AAstroSoldierCharacter()
 
 	OverHeadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverHeadWidget"));
 	OverHeadWidget->SetupAttachment(GetMesh());
+
+	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	Combat->SetIsReplicated(true);
+}
+
+void AAstroSoldierCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AAstroSoldierCharacter, InteractuableItem, COND_OwnerOnly);
+}
+
+void AAstroSoldierCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if(IsValid(Combat))
+	{
+		Combat->AstroCharacter = this;
+	}
+}
+
+void AAstroSoldierCharacter::SetInteractuableItem(AInteractuableItem* NewInteractuableItem)
+{
+	if(IsLocallyControlled())
+	{
+		if(NewInteractuableItem != nullptr)
+		{
+			NewInteractuableItem->SetPickUpWidgetVisibility(true);
+		}
+		if(InteractuableItem != nullptr)
+		{
+			InteractuableItem->SetPickUpWidgetVisibility(false);
+		}
+	}	
+	InteractuableItem = NewInteractuableItem;
+}
+
+void AAstroSoldierCharacter::OnRep_SetInteractuableItem(AInteractuableItem* NewInteractuableItem)
+{
+/*#if WITH_EDITOR
+	FString Message = NewInteractuableWeapon != nullptr ? FString::Printf(TEXT("NewInteractuableWeapon no null")) : FString::Printf(TEXT("NewInteractuableWeapon is null"));
+	FString Message1 = InteractuableWeapon != nullptr ? FString::Printf(TEXT("InteractuableWeapon no null")) : FString::Printf(TEXT("InteractuableWeapon is null"));
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Red, Message);
+		GEngine->AddOnScreenDebugMessage(1, 5.f, FColor::Green, Message1);
+	}
+#endif*/
+	if(NewInteractuableItem != nullptr)
+	{
+		NewInteractuableItem->SetPickUpWidgetVisibility(false);
+	}
+	if(InteractuableItem != nullptr)
+	{
+		InteractuableItem->SetPickUpWidgetVisibility(true);
+	}
 }
 
 void AAstroSoldierCharacter::PawnClientRestart()
@@ -60,7 +120,6 @@ void AAstroSoldierCharacter::PawnClientRestart()
 void AAstroSoldierCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void AAstroSoldierCharacter::Move(const FInputActionValue& ActionValue)
@@ -106,6 +165,24 @@ void AAstroSoldierCharacter::Rotate(const FInputActionValue& ActionValue)
 	}
 }
 
+void AAstroSoldierCharacter::Interact(const FInputActionValue& ActionValue)
+{
+	if(IsValid(InteractuableItem) && HasAuthority() && IsValid(Combat))
+	{
+		switch (InteractuableItem->GetItemInteraction())
+		{
+		case EItemInteraction::EII_Equip:
+			Combat->EquipWeapon(Cast<AWeapon>(InteractuableItem));
+			break;
+		case EItemInteraction::EII_Save:
+			break;
+		case EItemInteraction::EII_NONE:
+			break;
+		default: ;
+		}
+	}
+}
+
 void AAstroSoldierCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -121,8 +198,6 @@ void AAstroSoldierCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	{
 		PlayerEnhancedInputComponent->BindAction(IADataList->DataActions[TEXT("IA_Move")],ETriggerEvent::Triggered, this, &ThisClass::Move);
 		PlayerEnhancedInputComponent->BindAction(IADataList->DataActions[TEXT("IA_Rotate")],ETriggerEvent::Triggered, this, &ThisClass::Rotate);
+		PlayerEnhancedInputComponent->BindAction(IADataList->DataActions[TEXT("IA_Interact")],ETriggerEvent::Triggered, this, &ThisClass::Interact);
 	}
 }
-
-
-

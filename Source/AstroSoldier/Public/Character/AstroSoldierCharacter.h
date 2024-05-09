@@ -7,11 +7,13 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Items/Weapons/Weapon.h"
 #include "AstroSoldierCharacter.generated.h"
 
 class UInputActionsData;
 class UInputMappingContext;
 class UWidgetComponent;
+class UCombatComponent;
 
 UCLASS()
 class ASTROSOLDIER_API AAstroSoldierCharacter : public ACharacter
@@ -25,6 +27,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void PawnClientRestart() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
+
+	FORCEINLINE const TObjectPtr<AInteractuableItem> GetInteractuableItem(){ return this->InteractuableItem; }
+	void SetInteractuableItem(AInteractuableItem* NewInteractuableItem);
+
+	UFUNCTION()
+	void OnRep_SetInteractuableItem(AInteractuableItem* NewInteractuableItem);
 
 protected:
 	
@@ -32,6 +42,7 @@ protected:
 
 	void Move(const FInputActionValue& ActionValue);
 	void Rotate(const FInputActionValue& ActionValue);
+	void Interact(const FInputActionValue& ActionValue);
 
 private:
 
@@ -59,5 +70,13 @@ private:
     float LookUpTurnRate = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Elements|HUD", meta=(AllowPrivateAccess = "true"))
-	TObjectPtr<UWidgetComponent> OverHeadWidget;
+	TObjectPtr<UWidgetComponent> OverHeadWidget;	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Elements|Components", meta=(AllowPrivateAccess = "true"))
+	TObjectPtr<UCombatComponent> Combat;
+
+	////////////REPLICATED MEMBERS//////////////
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Elements|Interactuables", meta=(AllowPrivateAccess = "true"), ReplicatedUsing=OnRep_SetInteractuableItem)
+	TObjectPtr<AInteractuableItem> InteractuableItem;
 };
