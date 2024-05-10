@@ -50,11 +50,6 @@ AAstroSoldierCharacter::AAstroSoldierCharacter()
 	Combat->SetIsReplicated(true);
 }
 
-AAstroSoldierCharacter::~AAstroSoldierCharacter()
-{
-	delete InteractuableItem;
-}
-
 void AAstroSoldierCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -195,6 +190,11 @@ void AAstroSoldierCharacter::Interact(const FInputActionValue& ActionValue)
 	}
 }
 
+void AAstroSoldierCharacter::Crouch(const FInputActionValue& ActionValue)
+{
+	
+}
+
 void AAstroSoldierCharacter::ServerInteract_Implementation()
 {
 	if(IsValid(InteractuableItem) && IsValid(Combat))
@@ -229,5 +229,6 @@ void AAstroSoldierCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		PlayerEnhancedInputComponent->BindAction(IADataList->DataActions[TEXT("IA_Move")],ETriggerEvent::Triggered, this, &ThisClass::Move);
 		PlayerEnhancedInputComponent->BindAction(IADataList->DataActions[TEXT("IA_Rotate")],ETriggerEvent::Triggered, this, &ThisClass::Rotate);
 		PlayerEnhancedInputComponent->BindAction(IADataList->DataActions[TEXT("IA_Interact")],ETriggerEvent::Triggered, this, &ThisClass::Interact);
+		PlayerEnhancedInputComponent->BindAction(IADataList->DataActions[TEXT("IA_Crouch")],ETriggerEvent::Triggered, this, &ThisClass::Crouch);
 	}
 }

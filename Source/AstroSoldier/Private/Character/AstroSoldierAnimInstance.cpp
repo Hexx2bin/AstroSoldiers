@@ -2,6 +2,8 @@
 
 
 #include "Character/AstroSoldierAnimInstance.h"
+
+#include "AstroComponents/CombatComponent.h"
 #include "Character/AstroSoldierCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -28,4 +30,12 @@ void UAstroSoldierAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	bIsInAir = AstroCharacter->GetCharacterMovement()->IsFalling();
 	bIsAcelerating = AstroCharacter->GetCharacterMovement()->GetCurrentAcceleration().Size() > 0.f ? true : false;
+	bIsWeaponEquipped = AstroCharacter->GetCombatComponent()->GetEquippedWeapon() != nullptr;
+
+#if WITH_EDITOR
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(0, 5.f, FColor::Red, bIsWeaponEquipped ? FString::Printf(TEXT("bIsWeaponEquipped: true")) : FString::Printf(TEXT("bIsWeaponEquipped: false")));
+	}
+#endif
 }

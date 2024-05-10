@@ -23,7 +23,6 @@ class ASTROSOLDIER_API AAstroSoldierCharacter : public ACharacter
 public:
 	
 	AAstroSoldierCharacter();
-	~AAstroSoldierCharacter();
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -31,8 +30,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 
-	FORCEINLINE const TObjectPtr<AInteractuableItem> GetInteractuableItem(){ return this->InteractuableItem; }
+	FORCEINLINE TObjectPtr<AInteractuableItem> GetInteractuableItem() const { return this->InteractuableItem; }
 	void SetInteractuableItem(AInteractuableItem* NewInteractuableItem);
+	FORCEINLINE TObjectPtr<UCombatComponent> GetCombatComponent() const { return Combat; } 
 
 	UFUNCTION()
 	void OnRep_SetInteractuableItem(AInteractuableItem* NewInteractuableItem);
@@ -44,6 +44,7 @@ protected:
 	void Move(const FInputActionValue& ActionValue);
 	void Rotate(const FInputActionValue& ActionValue);
 	void Interact(const FInputActionValue& ActionValue);
+	void Crouch(const FInputActionValue& ActionValue);
 
 private:
 
@@ -76,6 +77,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Elements|Components", meta=(AllowPrivateAccess = "true"))
 	TObjectPtr<UCombatComponent> Combat;
 
+private:
 	////////////RPC FUNCTIONS////////////////
 
 	UFUNCTION(Server, Reliable)
