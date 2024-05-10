@@ -23,6 +23,7 @@ class ASTROSOLDIER_API AAstroSoldierCharacter : public ACharacter
 public:
 	
 	AAstroSoldierCharacter();
+	~AAstroSoldierCharacter();
 
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -75,8 +76,13 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Elements|Components", meta=(AllowPrivateAccess = "true"))
 	TObjectPtr<UCombatComponent> Combat;
 
+	////////////RPC FUNCTIONS////////////////
+
+	UFUNCTION(Server, Reliable)
+	void ServerInteract();
+	
 	////////////REPLICATED MEMBERS//////////////
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Elements|Interactuables", meta=(AllowPrivateAccess = "true"), ReplicatedUsing=OnRep_SetInteractuableItem)
-	TObjectPtr<AInteractuableItem> InteractuableItem;
+	AInteractuableItem* InteractuableItem;
 };

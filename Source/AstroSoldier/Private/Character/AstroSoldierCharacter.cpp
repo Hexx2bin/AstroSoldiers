@@ -50,6 +50,11 @@ AAstroSoldierCharacter::AAstroSoldierCharacter()
 	Combat->SetIsReplicated(true);
 }
 
+AAstroSoldierCharacter::~AAstroSoldierCharacter()
+{
+	delete InteractuableItem;
+}
+
 void AAstroSoldierCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -167,7 +172,32 @@ void AAstroSoldierCharacter::Rotate(const FInputActionValue& ActionValue)
 
 void AAstroSoldierCharacter::Interact(const FInputActionValue& ActionValue)
 {
-	if(IsValid(InteractuableItem) && HasAuthority() && IsValid(Combat))
+	if(IsValid(InteractuableItem) && IsValid(Combat))
+	{
+		if(HasAuthority())
+		{
+			switch (InteractuableItem->GetItemInteraction())
+			{
+			case EItemInteraction::EII_Equip:
+				Combat->EquipWeapon(Cast<AWeapon>(InteractuableItem));
+				break;
+			case EItemInteraction::EII_Save:
+				break;
+			case EItemInteraction::EII_NONE:
+				break;
+			default: ;
+			}
+		}
+		else
+		{
+			ServerInteract();
+		}
+	}
+}
+
+void AAstroSoldierCharacter::ServerInteract_Implementation()
+{
+	if(IsValid(InteractuableItem) && IsValid(Combat))
 	{
 		switch (InteractuableItem->GetItemInteraction())
 		{
